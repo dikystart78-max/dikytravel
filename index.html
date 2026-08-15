@@ -3,54 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>DikyAventura - Travel & Budget Planner</title>
+  <title>DikyAventura - Travel App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Firebase SDKs para Sincronización en Nube -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
   <style>
-    /* Estilos App Nativa */
     body {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
+      background-color: #f8fafc;
     }
-    input, textarea, button {
-      user-select: text;
+    input, textarea, button { user-select: text; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
   </style>
 </head>
-<body class="bg-slate-100 font-sans min-h-screen text-slate-800 pb-12">
+<body class="font-sans min-h-screen text-slate-800 pb-12">
 
-  <!-- ENCABEZADO ESTILO APP -->
-  <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+  <!-- ENCABEZADO APP -->
+  <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white sticky top-0 z-40 shadow-lg border-b border-indigo-900/40">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3 cursor-pointer" onclick="showDashboard()">
-        <div class="w-9 h-9 rounded-xl bg-indigo-500/30 flex items-center justify-center border border-indigo-400/30">
-          <i class="fa-solid fa-earth-americas text-xl text-indigo-200"></i>
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/30">
+          <i class="fa-solid fa-plane-departure text-white text-lg"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold leading-none">DikyAventura</h1>
-          <p class="text-[10px] text-indigo-200 font-medium">Travel & Expense Planner</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-black tracking-tight">DikyAventura</h1>
+            <span id="sync-badge" class="text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <i class="fa-solid fa-cloud"></i> Local
+            </span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium">Travel & Expense Management</p>
         </div>
       </div>
-      <button id="btn-main-dashboard" onclick="showDashboard()" class="hidden bg-indigo-700/80 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 border border-indigo-500/30">
-        <i class="fa-solid fa-house"></i> Mis Viajes
-      </button>
+      
+      <div class="flex items-center gap-2">
+        <button id="btn-main-dashboard" onclick="showDashboard()" class="hidden bg-slate-800/80 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition border border-slate-700/60 flex items-center gap-1.5">
+          <i class="fa-solid fa-house text-indigo-400"></i> Inicio
+        </button>
+        <button onclick="openConfigModal()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 p-2 rounded-xl text-xs transition border border-slate-700/60" title="Configurar Nube">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-4xl mx-auto px-4 py-5">
+  <main class="max-w-3xl mx-auto px-4 py-5">
 
     <!-- VISTA 1: DASHBOARD DE VIAJES -->
     <section id="view-dashboard" class="space-y-4">
       <div class="flex justify-between items-center">
         <div>
-          <h2 class="text-xl font-extrabold text-slate-800">Mis Mis viajes</h2>
-          <p class="text-xs text-slate-500">Planifica itinerarios y controla tus gastos</p>
+          <h2 class="text-xl font-black text-slate-900 tracking-tight">Mis Viajes</h2>
+          <p class="text-xs text-slate-500">Sincronizado entre tu iPhone y Laptop</p>
         </div>
-        <button onclick="openTripModal()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-3.5 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5">
-          <i class="fa-solid fa-plus text-xs"></i> Nuevo Viaje
+        <button onclick="openTripModal()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white px-4 py-2.5 rounded-2xl text-xs font-bold shadow-lg shadow-indigo-500/20 transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Nuevo Viaje
         </button>
       </div>
 
@@ -62,78 +76,113 @@
     <!-- VISTA 2: DETALLE DEL VIAJE -->
     <section id="view-trip-detail" class="hidden space-y-5">
       
-      <!-- Ficha resumen del viaje -->
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 relative overflow-hidden">
-        <div class="flex justify-between items-start gap-2">
+      <!-- Ficha de Presupuesto y Resumen -->
+      <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 relative overflow-hidden space-y-4">
+        <div class="flex justify-between items-start">
           <div>
-            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">Itinerario Activo</span>
-            <h2 id="detail-trip-title" class="text-2xl font-black text-slate-800 mt-1.5">--</h2>
-            <p id="detail-trip-desc" class="text-xs text-slate-500 mt-0.5">--</p>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">Itinerario Activo</span>
+            <h2 id="detail-trip-title" class="text-2xl font-black text-slate-900 mt-1">--</h2>
+            <p id="detail-trip-desc" class="text-xs text-slate-500">--</p>
           </div>
           <div class="flex items-center gap-1.5">
-            <button onclick="editCurrentTrip()" class="bg-amber-50 hover:bg-amber-100 text-amber-700 p-2 rounded-xl text-xs font-medium transition" title="Editar datos del viaje">
+            <button onclick="editCurrentTrip()" class="bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-700 p-2 rounded-xl text-xs transition" title="Editar viaje">
               <i class="fa-solid fa-pen"></i>
             </button>
-            <button onclick="deleteCurrentTrip()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-xl text-xs font-medium transition" title="Eliminar viaje">
+            <button onclick="deleteCurrentTrip()" class="bg-rose-50 hover:bg-rose-100 text-rose-600 p-2 rounded-xl text-xs transition" title="Eliminar viaje">
               <i class="fa-solid fa-trash-can"></i>
             </button>
           </div>
         </div>
 
-        <!-- Módulo de Presupuesto del Viaje -->
-        <div class="mt-4 pt-4 border-t border-slate-100">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
-              <i class="fa-solid fa-wallet text-indigo-600"></i> Presupuesto & Balance
+        <!-- Módulo de Finanzas -->
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-4 shadow-md space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie"></i> Presupuesto del Viaje
             </span>
-            <button onclick="openBudgetModal()" class="text-[11px] font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition border border-indigo-100 flex items-center gap-1">
-              <i class="fa-solid fa-pen text-[10px]"></i> Editar Presupuesto
+            <button onclick="openBudgetModal()" class="text-[11px] font-bold bg-indigo-500/30 hover:bg-indigo-500/50 text-indigo-200 border border-indigo-400/30 px-2.5 py-1 rounded-xl transition flex items-center gap-1">
+              <i class="fa-solid fa-pen text-[10px]"></i> Editar Total
             </button>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 text-center">
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400 uppercase block">Presupuesto</span>
-              <p id="budget-total" class="text-sm font-black text-slate-800 mt-0.5">$0.00</p>
+          <div class="grid grid-cols-3 gap-2 text-center pt-1">
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Total</span>
+              <p id="budget-total" class="text-sm font-black mt-0.5">$0.00</p>
             </div>
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400 uppercase block">Gastado</span>
-              <p id="budget-spent" class="text-sm font-black text-rose-600 mt-0.5">$0.00</p>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Gastado</span>
+              <p id="budget-spent" class="text-sm font-black text-rose-400 mt-0.5">$0.00</p>
             </div>
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-              <span class="text-[10px] font-bold text-slate-400 uppercase block">Disponible</span>
-              <p id="budget-remaining" class="text-sm font-black text-emerald-600 mt-0.5">$0.00</p>
+            <div class="bg-white/5 p-2 rounded-xl border border-white/10">
+              <span class="text-[10px] text-slate-400 font-bold uppercase block">Disponible</span>
+              <p id="budget-remaining" class="text-sm font-black text-emerald-400 mt-0.5">$0.00</p>
+            </div>
+          </div>
+
+          <!-- Barra Visual de Consumo -->
+          <div class="space-y-1">
+            <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-white/10">
+              <div id="budget-progress-bar" class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-400 font-semibold px-0.5">
+              <span id="budget-percent-text">0% gastado</span>
+              <span id="budget-status-text">Dentro del límite</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Listado de Paradas / Etapas -->
+      <!-- Paradas / Itinerario -->
       <div class="flex items-center justify-between">
-        <h3 class="text-base font-extrabold text-slate-800 flex items-center gap-2">
-          <span>Etapas del Recorrido</span>
-          <span id="stage-count" class="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">0</span>
+        <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+          <span>Paradas de la Ruta</span>
+          <span id="stage-count" class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">0</span>
         </h3>
-        <button onclick="openStageModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition flex items-center gap-1">
+        <button onclick="openStageModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3.5 py-2 rounded-2xl text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
           <i class="fa-solid fa-plus text-[10px]"></i> Nueva Parada
         </button>
       </div>
 
       <div id="stages-container" class="space-y-4">
-        <!-- Paradas renderizadas -->
+        <!-- Paradas Renderizadas -->
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL: CAMBIAR PRESUPUESTO -->
+  <!-- MODAL: CONFIGURAR FIREBASE -->
+  <div id="modal-config" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div>
+        <h3 class="text-base font-bold text-slate-900">Sincronización en Nube (Firebase)</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Ingresa tus credenciales de Firebase para sincronizar en tiempo real entre iPhone y Laptop.</p>
+      </div>
+      <form onsubmit="handleSaveConfig(event)" class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">API Key</label>
+          <input type="text" id="cfg-apiKey" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Project ID</label>
+          <input type="text" id="cfg-projectId" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-mono">
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeConfigModal()" class="px-3 py-1.5 text-slate-500 text-xs font-semibold">Cancelar</button>
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold shadow">Guardar y Conectar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PRESUPUESTO -->
   <div id="modal-budget" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl">
-      <h3 class="text-base font-bold text-slate-800 mb-3">Editar Presupuesto Total</h3>
+    <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl">
+      <h3 class="text-base font-bold text-slate-900 mb-3">Modificar Presupuesto</h3>
       <form onsubmit="handleSaveBudget(event)" class="space-y-3">
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto Total Estimado ($ USD)</label>
-          <input type="number" id="input-budget-amount" step="0.01" required placeholder="Ej: 5000" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto Total ($ USD)</label>
+          <input type="number" id="input-budget-amount" step="0.01" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeBudgetModal()" class="px-3 py-1.5 text-slate-500 text-xs font-semibold">Cancelar</button>
@@ -143,19 +192,19 @@
     </div>
   </div>
 
-  <!-- MODAL: CREAR / EDITAR VIAJE -->
+  <!-- MODAL: VIAJE -->
   <div id="modal-trip" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl">
-      <h3 id="modal-trip-title-text" class="text-base font-bold text-slate-800 mb-3">Nuevo Viaje</h3>
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl">
+      <h3 id="modal-trip-title-text" class="text-base font-bold text-slate-900 mb-3">Nuevo Viaje</h3>
       <form id="form-trip" onsubmit="handleSaveTrip(event)" class="space-y-3">
         <input type="hidden" id="edit-trip-id">
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Destino / Nombre</label>
-          <input type="text" id="trip-title" required placeholder="Ej: Estados Unidos" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <input type="text" id="trip-title" required placeholder="Ej: Estados Unidos 2026" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Descripción corta</label>
-          <input type="text" id="trip-desc" placeholder="Ej: Recorrido de Costa a Costa" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Descripción</label>
+          <input type="text" id="trip-desc" placeholder="Ej: Nueva York, Chicago, Los Ángeles" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Presupuesto ($ USD)</label>
@@ -169,14 +218,14 @@
     </div>
   </div>
 
-  <!-- MODAL: CREAR / EDITAR ETAPA -->
+  <!-- MODAL: PARADA / ETAPA -->
   <div id="modal-stage" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <h3 id="modal-stage-title-text" class="text-base font-bold text-slate-800 mb-3">Agregar Parada</h3>
+    <div class="bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <h3 id="modal-stage-title-text" class="text-base font-bold text-slate-900 mb-3">Agregar Parada</h3>
       <form id="form-stage" onsubmit="handleSaveStage(event)" class="space-y-3">
         <input type="hidden" id="edit-stage-id">
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ciudad / Punto de Parada</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ciudad / Punto</label>
           <input type="text" id="stage-name" required placeholder="Ej: Nueva York" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div class="grid grid-cols-2 gap-2">
@@ -194,12 +243,12 @@
           <input type="text" id="stage-hotel" placeholder="Ej: DoubleTree Times Square" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puntos a Visitar</label>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Atracciones / Recorrido</label>
           <textarea id="stage-places" rows="2" placeholder="Ej: Rockefeller Center, Central Park..." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
         </div>
         <div>
-          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Notas / Consejos</label>
-          <input type="text" id="stage-notes" placeholder="Ej: Metro Línea N/Q/R" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Notas</label>
+          <input type="text" id="stage-notes" placeholder="Ej: MetroCard 7 días" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div class="flex justify-end space-x-2 pt-2">
           <button type="button" onclick="closeStageModal()" class="px-3 py-1.5 text-slate-500 text-xs font-semibold">Cancelar</button>
@@ -209,16 +258,16 @@
     </div>
   </div>
 
-  <!-- MODAL: CREAR / EDITAR GASTO -->
+  <!-- MODAL: GASTO -->
   <div id="modal-expense" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-xs w-full p-5 shadow-2xl">
-      <h3 id="modal-expense-title-text" class="text-base font-bold text-slate-800 mb-3">Registrar Gasto</h3>
+    <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl">
+      <h3 id="modal-expense-title-text" class="text-base font-bold text-slate-900 mb-3">Registrar Gasto</h3>
       <form id="form-expense" onsubmit="handleSaveExpense(event)" class="space-y-3">
         <input type="hidden" id="expense-stage-id">
         <input type="hidden" id="expense-edit-id">
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Concepto</label>
-          <input type="text" id="expense-title" required placeholder="Ej: Cena / Entradas" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          <input type="text" id="expense-title" required placeholder="Ej: Cena / Boletos" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
         </div>
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Monto ($ USD)</label>
@@ -232,14 +281,45 @@
     </div>
   </div>
 
-  <!-- LOGICA DE LA APLICACION -->
+  <!-- LÓGICA DE APLICACIÓN Y SINCRONIZACIÓN -->
   <script>
-    // Estado inicial
-    let trips = JSON.parse(localStorage.getItem('diky_trips_v3')) || [
+    // Configuración por defecto de Firebase (se actualiza desde la app o con tu proyecto)
+    let fbConfig = JSON.parse(localStorage.getItem('diky_fb_config')) || {
+      apiKey: "",
+      projectId: ""
+    };
+
+    let db = null;
+    let isFirebaseActive = false;
+
+    function initFirebase() {
+      if (fbConfig.apiKey && fbConfig.projectId) {
+        try {
+          if (!firebase.apps.length) {
+            firebase.initializeApp({
+              apiKey: fbConfig.apiKey,
+              authDomain: `${fbConfig.projectId}.firebaseapp.com`,
+              projectId: fbConfig.projectId,
+              storageBucket: `${fbConfig.projectId}.appspot.com`
+            });
+          }
+          db = firebase.firestore();
+          isFirebaseActive = true;
+          document.getElementById('sync-badge').className = "text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full flex items-center gap-1";
+          document.getElementById('sync-badge').innerHTML = `<i class="fa-solid fa-cloud-check"></i> Sincronizado`;
+          listenToCloud();
+        } catch (e) {
+          console.error("Firebase err:", e);
+        }
+      }
+    }
+
+    // Datos
+    let trips = JSON.parse(localStorage.getItem('diky_trips_v4')) || [
       {
         id: '1',
         title: 'Estados Unidos',
-        desc: 'Aventura Costa a Costa',
+        desc: 'Recorrido Costa a Costa',
         budget: 4500,
         stages: [
           { 
@@ -269,10 +349,26 @@
     let currentTripId = null;
 
     function saveToStorage() {
-      localStorage.setItem('diky_trips_v3', JSON.stringify(trips));
+      localStorage.setItem('diky_trips_v4', JSON.stringify(trips));
+      if (isFirebaseActive && db) {
+        db.collection("app_data").doc("trips_store").set({ trips: trips, updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+          .catch(err => console.error("Error guardando en la nube:", err));
+      }
     }
 
-    // Navegación
+    function listenToCloud() {
+      if (isFirebaseActive && db) {
+        db.collection("app_data").doc("trips_store").onSnapshot((doc) => {
+          if (doc.exists && doc.data().trips) {
+            trips = doc.data().trips;
+            localStorage.setItem('diky_trips_v4', JSON.stringify(trips));
+            if (currentTripId) renderTripDetail(); else renderTrips();
+          }
+        });
+      }
+    }
+
+    // Vistas y Navegación
     function showDashboard() {
       currentTripId = null;
       document.getElementById('view-dashboard').classList.remove('hidden');
@@ -289,13 +385,13 @@
       renderTripDetail();
     }
 
-    // Renderizado Dashboard
+    // Render Dashboard
     function renderTrips() {
       const container = document.getElementById('trips-container');
       container.innerHTML = '';
 
       if (trips.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 text-xs">No hay viajes registrados. ¡Crea el primero!</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-xs">Sin viajes registrados. ¡Crea el primero!</div>`;
         return;
       }
 
@@ -303,23 +399,23 @@
         const totalSpent = trip.stages.reduce((acc, s) => acc + (s.expenses ? s.expenses.reduce((ea, e) => ea + parseFloat(e.amount || 0), 0) : 0), 0);
         
         const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 hover:shadow-md transition flex flex-col justify-between";
+        card.className = "bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 hover:shadow-md transition flex flex-col justify-between space-y-3";
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between mb-2">
-              <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
-                <i class="fa-solid fa-location-dot"></i> ${trip.stages.length} Paradas
+              <span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
+                <i class="fa-solid fa-map-pin"></i> ${trip.stages.length} Paradas
               </span>
-              <span class="text-[11px] font-extrabold text-slate-600">$${totalSpent.toFixed(2)} gastados</span>
+              <span class="text-[11px] font-black text-slate-700">$${totalSpent.toFixed(2)} gastados</span>
             </div>
-            <h3 class="text-lg font-bold text-slate-800">${trip.title}</h3>
-            <p class="text-xs text-slate-500 mt-0.5 mb-3">${trip.desc || 'Sin descripción'}</p>
+            <h3 class="text-lg font-black text-slate-900 tracking-tight">${trip.title}</h3>
+            <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">${trip.desc || 'Sin descripción'}</p>
           </div>
-          <div class="flex gap-2">
-            <button onclick="showTripDetail('${trip.id}')" class="flex-1 bg-slate-900 hover:bg-indigo-600 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1.5">
+          <div class="flex gap-2 pt-1">
+            <button onclick="showTripDetail('${trip.id}')" class="flex-1 bg-slate-900 hover:bg-indigo-600 text-white font-bold py-2.5 rounded-2xl text-xs transition flex items-center justify-center gap-1.5 shadow-md">
               Ver Detalle <i class="fa-solid fa-chevron-right text-[10px]"></i>
             </button>
-            <button onclick="openTripModal('${trip.id}')" class="bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-700 px-3 py-2 rounded-xl text-xs transition" title="Editar Viaje">
+            <button onclick="openTripModal('${trip.id}')" class="bg-slate-100 hover:bg-amber-100 text-slate-600 hover:text-amber-700 px-3.5 py-2.5 rounded-2xl text-xs transition" title="Editar">
               <i class="fa-solid fa-pen"></i>
             </button>
           </div>
@@ -328,7 +424,7 @@
       });
     }
 
-    // Renderizado Detalle
+    // Render Detalle
     function renderTripDetail() {
       const trip = trips.find(t => t.id === currentTripId);
       if (!trip) return showDashboard();
@@ -337,7 +433,7 @@
       document.getElementById('detail-trip-desc').innerText = trip.desc || 'Sin descripción';
       document.getElementById('stage-count').innerText = trip.stages.length;
 
-      // CÁLCULO DE PRESUPUESTO Y GASTOS
+      // CÁLCULOS MONETARIOS
       const budget = parseFloat(trip.budget || 0);
       let totalSpent = 0;
       trip.stages.forEach(s => {
@@ -346,38 +442,45 @@
         }
       });
       const remaining = budget - totalSpent;
+      const percentSpent = budget > 0 ? Math.min(Math.round((totalSpent / budget) * 100), 100) : 0;
 
       document.getElementById('budget-total').innerText = `$${budget.toFixed(2)}`;
       document.getElementById('budget-spent').innerText = `$${totalSpent.toFixed(2)}`;
       document.getElementById('budget-remaining').innerText = `$${remaining.toFixed(2)}`;
-      document.getElementById('budget-remaining').className = `text-sm font-black mt-0.5 ${remaining < 0 ? 'text-rose-600' : 'text-emerald-600'}`;
+      document.getElementById('budget-remaining').className = `text-sm font-black mt-0.5 ${remaining < 0 ? 'text-rose-400' : 'text-emerald-400'}`;
 
-      // RENDERIZADO DE ETAPAS
+      const progressBar = document.getElementById('budget-progress-bar');
+      progressBar.style.width = `${percentSpent}%`;
+      progressBar.className = `h-2 rounded-full transition-all duration-500 ${remaining < 0 ? 'bg-rose-500' : percentSpent > 85 ? 'bg-amber-400' : 'bg-emerald-400'}`;
+
+      document.getElementById('budget-percent-text').innerText = `${percentSpent}% consumido`;
+      document.getElementById('budget-status-text').innerText = remaining < 0 ? '¡Excedido!' : 'Dentro del límite';
+
+      // RENDER PARADAS
       const container = document.getElementById('stages-container');
       container.innerHTML = '';
 
       if (trip.stages.length === 0) {
-        container.innerHTML = `<div class="text-center py-8 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-400 text-xs">No hay paradas en este viaje aún.</div>`;
+        container.innerHTML = `<div class="text-center py-10 bg-white rounded-3xl border border-dashed border-slate-300 text-slate-400 text-xs">No hay paradas en este viaje aún.</div>`;
         return;
       }
 
       trip.stages.forEach((stage, idx) => {
         const mapsQuery = encodeURIComponent(`${stage.name} ${stage.hotel || ''}`);
-        const restaurantQuery = encodeURIComponent(`Restaurantes cerca de ${stage.name}`);
-        const metroQuery = encodeURIComponent(`Estación metro cerca de ${stage.name}`);
+        const restaurantQuery = encodeURIComponent(`Restaurantes en ${stage.name}`);
+        const metroQuery = encodeURIComponent(`Metro cerca de ${stage.name}`);
 
         const stageExpensesTotal = stage.expenses ? stage.expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) : 0;
 
-        // Lista HTML de gastos
         let expensesListHtml = '';
         if (stage.expenses && stage.expenses.length > 0) {
           expensesListHtml = stage.expenses.map(exp => `
-            <div class="flex items-center justify-between text-xs bg-slate-50 py-1.5 px-2.5 rounded-lg border border-slate-100">
-              <span class="font-medium text-slate-700">${exp.title}</span>
+            <div class="flex items-center justify-between text-xs bg-slate-50 py-1.5 px-3 rounded-xl border border-slate-100">
+              <span class="font-semibold text-slate-700">${exp.title}</span>
               <div class="flex items-center gap-2">
-                <span class="font-bold text-slate-900">$${parseFloat(exp.amount).toFixed(2)}</span>
-                <button onclick="openExpenseModal('${stage.id}', '${exp.id}')" class="text-amber-600 hover:text-amber-800 p-0.5" title="Editar gasto"><i class="fa-solid fa-pen text-[10px]"></i></button>
-                <button onclick="deleteExpense('${stage.id}', '${exp.id}')" class="text-rose-500 hover:text-rose-700 p-0.5" title="Borrar gasto"><i class="fa-solid fa-xmark text-[11px]"></i></button>
+                <span class="font-extrabold text-slate-900">$${parseFloat(exp.amount).toFixed(2)}</span>
+                <button onclick="openExpenseModal('${stage.id}', '${exp.id}')" class="text-amber-600 hover:text-amber-800 p-1" title="Editar"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                <button onclick="deleteExpense('${stage.id}', '${exp.id}')" class="text-rose-500 hover:text-rose-700 p-1" title="Eliminar"><i class="fa-solid fa-xmark text-[11px]"></i></button>
               </div>
             </div>
           `).join('');
@@ -386,43 +489,44 @@
         }
 
         const item = document.createElement('div');
-        item.className = "bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 space-y-3";
+        item.className = "bg-white rounded-3xl p-5 shadow-sm border border-slate-200/80 space-y-3 relative overflow-hidden";
         item.innerHTML = `
           <div class="flex justify-between items-start gap-2">
-            <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-[11px] font-black flex items-center justify-center">${idx + 1}</span>
-              <h4 class="text-base font-bold text-slate-800">${stage.name}</h4>
-              ${stage.dateStart ? `<span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full"><i class="fa-regular fa-calendar"></i> ${stage.dateStart} ${stage.dateEnd ? ' al ' + stage.dateEnd : ''}</span>` : ''}
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-2xl bg-indigo-600 text-white text-xs font-black flex items-center justify-center shadow-md shadow-indigo-600/20">${idx + 1}</span>
+              <div>
+                <h4 class="text-base font-black text-slate-900">${stage.name}</h4>
+                ${stage.dateStart ? `<span class="text-[10px] text-slate-500 font-medium"><i class="fa-regular fa-calendar"></i> ${stage.dateStart} ${stage.dateEnd ? ' al ' + stage.dateEnd : ''}</span>` : ''}
+              </div>
             </div>
             
             <div class="flex items-center gap-1">
-              <button onclick="openStageModal('${stage.id}')" class="text-[11px] bg-amber-50 text-amber-700 hover:bg-amber-100 px-2 py-1 rounded-lg font-bold transition flex items-center gap-1">
+              <button onclick="openStageModal('${stage.id}')" class="text-[11px] bg-amber-50 text-amber-700 hover:bg-amber-100 px-2.5 py-1 rounded-xl font-bold transition flex items-center gap-1">
                 <i class="fa-solid fa-pen"></i> Editar
               </button>
-              <button onclick="deleteStage('${stage.id}')" class="text-[11px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg font-bold transition" title="Borrar etapa">
+              <button onclick="deleteStage('${stage.id}')" class="text-[11px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-xl font-bold transition" title="Borrar">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-600 pt-1">
             <div class="space-y-1.5">
-              ${stage.hotel ? `<p><i class="fa-solid fa-hotel text-indigo-500 w-4"></i> <strong>Hotel:</strong> ${stage.hotel}</p>` : ''}
-              ${stage.places ? `<p><i class="fa-solid fa-map-pin text-rose-500 w-4"></i> <strong>Atracciones:</strong> ${stage.places}</p>` : ''}
-              ${stage.notes ? `<p class="italic text-slate-500"><i class="fa-solid fa-note-sticky text-amber-500 w-4"></i> ${stage.notes}</p>` : ''}
+              ${stage.hotel ? `<p class="flex items-center gap-2"><i class="fa-solid fa-hotel text-indigo-500 w-4"></i> <strong>Hotel:</strong> ${stage.hotel}</p>` : ''}
+              ${stage.places ? `<p class="flex items-start gap-2"><i class="fa-solid fa-map-pin text-rose-500 w-4 mt-0.5"></i> <span><strong>Atracciones:</strong> ${stage.places}</span></p>` : ''}
+              ${stage.notes ? `<p class="italic text-slate-500 flex items-center gap-2"><i class="fa-solid fa-note-sticky text-amber-500 w-4"></i> ${stage.notes}</p>` : ''}
             </div>
 
-            <!-- Accesos Inteligentes a Google Maps -->
-            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1.5">
-              <span class="text-[10px] font-bold text-slate-400 uppercase block"><i class="fa-solid fa-compass text-indigo-600"></i> Google Maps</span>
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1.5">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block"><i class="fa-solid fa-compass text-indigo-600"></i> Accesos Directos</span>
               <div class="flex flex-wrap gap-1.5">
-                <a href="https://www.google.com/maps/search/?api=1&query=${mapsQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-1 rounded-lg transition font-semibold flex items-center gap-1">
-                  <i class="fa-solid fa-map-location-dot text-rose-500"></i> Ubicación
+                <a href="https://www.google.com/maps/search/?api=1&query=${mapsQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2.5 py-1 rounded-xl transition font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-map-location-dot text-rose-500"></i> Mapa
                 </a>
-                <a href="https://www.google.com/maps/search/?api=1&query=${restaurantQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-1 rounded-lg transition font-semibold flex items-center gap-1">
+                <a href="https://www.google.com/maps/search/?api=1&query=${restaurantQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2.5 py-1 rounded-xl transition font-bold flex items-center gap-1">
                   <i class="fa-solid fa-utensils text-emerald-500"></i> Comida
                 </a>
-                <a href="https://www.google.com/maps/search/?api=1&query=${metroQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-1 rounded-lg transition font-semibold flex items-center gap-1">
+                <a href="https://www.google.com/maps/search/?api=1&query=${metroQuery}" target="_blank" class="text-[10px] bg-white border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 px-2.5 py-1 rounded-xl transition font-bold flex items-center gap-1">
                   <i class="fa-solid fa-train-subway text-indigo-500"></i> Metro
                 </a>
               </div>
@@ -430,14 +534,14 @@
           </div>
 
           <!-- Módulo de Gastos de la Etapa -->
-          <div class="pt-2.5 border-t border-slate-100 space-y-2">
+          <div class="pt-3 border-t border-slate-100 space-y-2">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-bold text-slate-700">Gastos en esta parada: <span class="text-slate-900">$${stageExpensesTotal.toFixed(2)}</span></span>
-              <button onclick="openExpenseModal('${stage.id}')" class="text-[10px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-lg font-bold transition flex items-center gap-1 border border-emerald-100">
+              <span class="text-xs font-black text-slate-800">Gastos en esta parada: <span class="text-indigo-600">$${stageExpensesTotal.toFixed(2)}</span></span>
+              <button onclick="openExpenseModal('${stage.id}')" class="text-[10px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1 rounded-xl font-bold transition flex items-center gap-1 border border-emerald-100">
                 <i class="fa-solid fa-plus"></i> Cargar Gasto
               </button>
             </div>
-            <div class="space-y-1">
+            <div class="space-y-1.5">
               ${expensesListHtml}
             </div>
           </div>
@@ -446,7 +550,24 @@
       });
     }
 
-    // GESTIÓN DE PRESUPUESTO
+    // CONTROL DE CONFIGURACIÓN FIREBASE
+    function openConfigModal() {
+      document.getElementById('cfg-apiKey').value = fbConfig.apiKey || '';
+      document.getElementById('cfg-projectId').value = fbConfig.projectId || '';
+      document.getElementById('modal-config').classList.remove('hidden');
+    }
+    function closeConfigModal() { document.getElementById('modal-config').classList.add('hidden'); }
+
+    function handleSaveConfig(e) {
+      e.preventDefault();
+      fbConfig.apiKey = document.getElementById('cfg-apiKey').value.trim();
+      fbConfig.projectId = document.getElementById('cfg-projectId').value.trim();
+      localStorage.setItem('diky_fb_config', JSON.stringify(fbConfig));
+      closeConfigModal();
+      initFirebase();
+    }
+
+    // CONTROL DE MODALES
     function openBudgetModal() {
       const trip = trips.find(t => t.id === currentTripId);
       if (!trip) return;
@@ -466,7 +587,6 @@
       }
     }
 
-    // GESTIÓN DE VIAJES
     function openTripModal(tripId = null) {
       document.getElementById('modal-trip').classList.remove('hidden');
       if (tripId) {
@@ -517,7 +637,6 @@
       }
     }
 
-    // GESTIÓN DE ETAPAS
     function openStageModal(stageId = null) {
       document.getElementById('modal-stage').classList.remove('hidden');
       const trip = trips.find(t => t.id === currentTripId);
@@ -533,7 +652,7 @@
         document.getElementById('stage-places').value = stage.places || '';
         document.getElementById('stage-notes').value = stage.notes || '';
       } else {
-        document.getElementById('modal-stage-title-text').innerText = "Agregar Nueva Parada";
+        document.getElementById('modal-stage-title-text').innerText = "Agregar Parada";
         document.getElementById('form-stage').reset();
         document.getElementById('edit-stage-id').value = '';
       }
@@ -576,7 +695,6 @@
       }
     }
 
-    // GESTIÓN DE GASTOS (Crear, Editar y Borrar)
     function openExpenseModal(stageId, expenseId = null) {
       const trip = trips.find(t => t.id === currentTripId);
       if (!trip) return;
@@ -621,11 +739,7 @@
             exp.amount = amount;
           }
         } else {
-          stage.expenses.push({
-            id: Date.now().toString(),
-            title,
-            amount
-          });
+          stage.expenses.push({ id: Date.now().toString(), title, amount });
         }
 
         saveToStorage();
@@ -646,6 +760,7 @@
     }
 
     // Inicialización
+    initFirebase();
     renderTrips();
   </script>
 </body>
